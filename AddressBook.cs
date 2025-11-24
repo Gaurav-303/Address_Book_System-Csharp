@@ -88,5 +88,20 @@ namespace Address_Book_System
             contacts.Remove(person);
             Console.WriteLine("Contact Deleted Successfully!");
         }
+        // UC5 – Display Contacts
+        public void DisplayContacts()
+        {
+            if (contacts.Count == 0)
+            {
+                Console.WriteLine("No Contacts Available.");
+                return;
+            }
+
+            foreach (var c in contacts)
+            {
+                Console.WriteLine("-------------------------------");
+                Console.WriteLine(c);
+            }
+        }
     }
 }
