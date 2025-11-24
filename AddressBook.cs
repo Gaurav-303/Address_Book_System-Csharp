@@ -73,5 +73,19 @@ namespace Address_Book_System
 
             Console.WriteLine("Contact Updated Successfully!");
         }
+        // UC4 – Delete Contact
+        public void DeleteContact(string name)
+        {
+            var person = contacts.FirstOrDefault(c => c.FirstName.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+            if (person == null)
+            {
+                Console.WriteLine("Contact Not Found!");
+                return;
+            }
+
+            contacts.Remove(person);
+            Console.WriteLine("Contact Deleted Successfully!");
+        }
     }
 }
