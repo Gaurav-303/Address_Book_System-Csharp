@@ -11,10 +11,14 @@ namespace Address_Book_System
     internal class AddressBookService
     {
         private List<Contact> contacts = new List<Contact>();
+        private readonly object _lock = new object();
+
 
         // UC2 – Add Contact
         public void AddContact()
         {
+            Console.WriteLine(
+      $"[Thread {Thread.CurrentThread.ManagedThreadId}] Adding contact");
             Contact c = new Contact();
 
             Console.Write("Enter First Name: ");
@@ -73,52 +77,67 @@ namespace Address_Book_System
 
                 Console.WriteLine("Enter a valid email address");
             }
+            lock (_lock)
+            {
+                contacts.Add(c);
+            }
+
+            Console.WriteLine("Contact Added Successfully!");
         }
         // UC3 – Edit Contact
         public void EditContact(string name)
         {
-            Contact contact = contacts.FirstOrDefault(c => c.FirstName.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-            if (contact == null)
+            lock (_lock)
             {
-                Console.WriteLine("Contact Not Found!");
-                return;
+                Contact contact = contacts.FirstOrDefault(c => c.FirstName.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+                if (contact == null)
+                {
+                    Console.WriteLine("Contact Not Found!");
+                    return;
+                }
+
+
+                Console.Write("Enter New Address: ");
+                contact.Address = Console.ReadLine();
+
+                Console.Write("Enter New City: ");
+                contact.City = Console.ReadLine();
+
+                Console.Write("Enter New State: ");
+                contact.State = Console.ReadLine();
+
+                Console.Write("Enter New Zip: ");
+                contact.Zip = Console.ReadLine();
+
+                Console.Write("Enter New Phone Number: ");
+                contact.PhoneNumber = Console.ReadLine();
+
+                Console.Write("Enter New Email: ");
+                contact.Email = Console.ReadLine();
+
+                Console.WriteLine("Contact Updated Successfully!");
             }
-
-            Console.Write("Enter New Address: ");
-            contact.Address = Console.ReadLine();
-
-            Console.Write("Enter New City: ");
-            contact.City = Console.ReadLine();
-
-            Console.Write("Enter New State: ");
-            contact.State = Console.ReadLine();
-
-            Console.Write("Enter New Zip: ");
-            contact.Zip = Console.ReadLine();
-
-            Console.Write("Enter New Phone Number: ");
-            contact.PhoneNumber = Console.ReadLine();
-
-            Console.Write("Enter New Email: ");
-            contact.Email = Console.ReadLine();
-
-            Console.WriteLine("Contact Updated Successfully!");
         }
         // UC4 – Delete Contact
         public void DeleteContact(string name)
         {
-            var person = contacts.FirstOrDefault(c => c.FirstName.Equals(name, StringComparison.OrdinalIgnoreCase));
-
-            if (person == null)
+            lock (_lock)
             {
-                Console.WriteLine("Contact Not Found!");
-                return;
-            }
+                var person = contacts.FirstOrDefault(c => c.FirstName.Equals(name, StringComparison.OrdinalIgnoreCase));
 
-            contacts.Remove(person);
-            Console.WriteLine("Contact Deleted Successfully!");
+                if (person == null)
+                {
+                    Console.WriteLine("Contact Not Found!");
+                    return;
+                }
+
+                contacts.Remove(person);
+                Console.WriteLine("Contact Deleted Successfully!");
+            }
         }
+
+
         // UC5 – Display Contacts
         public void DisplayContacts()
         {
@@ -134,6 +153,8 @@ namespace Address_Book_System
                 Console.WriteLine(c);
             }
         }
+
+
         // UC 6 regex 
         public bool EmailCheck(string email)
         {
@@ -151,5 +172,41 @@ namespace Address_Book_System
             return Regex.IsMatch(zip, pattern);
                 
         }
+        // UC 7 Multithreading
+        public void AddContactsUsingMultithreading()
+        {
+            Task t1 = Task.Run(() => AddContact());
+            Task t2 = Task.Run(() => AddContact());
+
+            Task.WaitAll(t1, t2);
+
+            Console.WriteLine("Multiple contacts added using multithreading!");
+        }
+        public void EditContactsUsingMultithreading(string name1, string name2)
+        {
+            Task t1 = Task.Run(() => EditContact(name1));
+            Task t2 = Task.Run(() => EditContact(name2));
+
+            Task.WaitAll(t1, t2);
+
+            Console.WriteLine("Multiple contacts edited using multithreading!");
+        }
+
+        public void DisplayContactsAsync()
+        {
+            Task.Run(() =>
+            {
+                lock (_lock)
+                {
+                    foreach (var c in contacts)
+                    {
+                        Console.WriteLine("------------------");
+                        Console.WriteLine(c);
+                    }
+                }
+            });
+        }
+
+
     }
 }

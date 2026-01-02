@@ -13,7 +13,7 @@ namespace Address_Book_System
         {
             Console.WriteLine("Welcome to Address Book Program!");
 
-            Dictionary<string, AddressBook> addressBooks = new Dictionary<string, AddressBook>();
+            Dictionary<string, AddressBookService> addressBooks = new Dictionary<string, AddressBookService>();
 
             while (true)
             {
@@ -32,7 +32,7 @@ namespace Address_Book_System
                     case 1:
                         Console.Write("Enter Address Book Name: ");
                         string bookName = Console.ReadLine();
-                        addressBooks[bookName] = new AddressBook();
+                        addressBooks[bookName] = new AddressBookService();
                         Console.WriteLine("New Address Book Created!");
                         break;
 
@@ -81,8 +81,35 @@ namespace Address_Book_System
                         else
                             Console.WriteLine("Address Book Not Found!");
                         break;
-
                     case 6:
+                        Console.Write("Enter Address Book Name: ");
+                        string b5 = Console.ReadLine();
+
+                        if (addressBooks.ContainsKey(b5))
+                            addressBooks[b5].AddContactsUsingMultithreading();
+                        else
+                            Console.WriteLine("Address Book Not Found!");
+                        break;
+                    case 7:
+                        Console.Write("Enter Address Book Name: ");
+                        string b7 = Console.ReadLine();
+
+                        Console.Write("Enter First Name 1 to Edit: ");
+                        string e1 = Console.ReadLine();
+
+                        Console.Write("Enter First Name 2 to Edit: ");
+                        string e2 = Console.ReadLine();
+
+                        if (addressBooks.ContainsKey(b7))
+                            addressBooks[b7].EditContactsUsingMultithreading(e1, e2);
+                        else
+                            Console.WriteLine("Address Book Not Found!");
+                        break;
+
+                    
+
+
+                    case 8:
                         return;
 
                     default:
