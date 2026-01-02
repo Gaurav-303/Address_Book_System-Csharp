@@ -1,2 +1,17 @@
+# .NET build folders
+bin/
+obj/
+
+# Visual Studio files
 .vs/
-*.vscode/
+*.user
+*.suo
+
+# Build outputs
+*.dll
+*.exe
+*.pdb
+
+# OS files
+.DS_Store
+Thumbs.db
