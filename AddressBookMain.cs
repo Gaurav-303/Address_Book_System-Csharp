@@ -1,19 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Address_Book_System
 {
     internal class AddressBookMain
     {
-         
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to Address Book Program!");
 
-            Dictionary<string, AddressBookService> addressBooks = new Dictionary<string, AddressBookService>();
+            Dictionary<string, AddressBookService> addressBooks =
+                new Dictionary<string, AddressBookService>(StringComparer.OrdinalIgnoreCase);
 
             while (true)
             {
@@ -22,102 +19,108 @@ namespace Address_Book_System
                 Console.WriteLine("3. Edit Contact");
                 Console.WriteLine("4. Delete Contact");
                 Console.WriteLine("5. Show Contacts");
-                Console.WriteLine("6. Exit");
+                Console.WriteLine("6. Add Contacts (Multithreading)");
+                Console.WriteLine("7. Edit Contacts (Multithreading)");
+                Console.WriteLine("8. Exit");
                 Console.Write("Enter Choice: ");
 
-                int choice = Convert.ToInt32(Console.ReadLine());
-
-                switch (choice)
+                int choice;
+                if (!int.TryParse(Console.ReadLine(), out choice))
                 {
-                    case 1:
-                        Console.Write("Enter Address Book Name: ");
-                        string bookName = Console.ReadLine();
-                        addressBooks[bookName] = new AddressBookService();
-                        Console.WriteLine("New Address Book Created!");
-                        break;
+                    Console.WriteLine("Invalid input!");
+                    continue;
+                }
 
-                    case 2:
-                        Console.Write("Enter Address Book Name: ");
-                        string b1 = Console.ReadLine();
+                try
+                {
+                    switch (choice)
+                    {
+                        case 1:
+                            Console.Write("Enter Address Book Name: ");
+                            string bookName = Console.ReadLine();
 
-                        if (addressBooks.ContainsKey(b1))
-                            addressBooks[b1].AddContact();
-                        else
-                            Console.WriteLine("Address Book Not Found!");
-                        break;
+                            if (addressBooks.ContainsKey(bookName))
+                                throw new DuplicateAddressBookException(
+                                    $"Address Book '{bookName}' already exists");
 
-                    case 3:
-                        Console.Write("Enter Address Book Name: ");
-                        string b2 = Console.ReadLine();
+                            addressBooks.Add(bookName, new AddressBookService());
+                            Console.WriteLine("New Address Book Created!");
+                            break;
 
-                        Console.Write("Enter First Name of Contact to Edit: ");
-                        string nameEdit = Console.ReadLine();
+                        case 2:
+                            ExecuteIfBookExists(addressBooks,
+                                ab => ab.AddContact());
+                            break;
 
-                        if (addressBooks.ContainsKey(b2))
-                            addressBooks[b2].EditContact(nameEdit);
-                        else
-                            Console.WriteLine("Address Book Not Found!");
-                        break;
+                        case 3:
+                            ExecuteIfBookExists(addressBooks,
+                                ab =>
+                                {
+                                    Console.Write("Enter First Name to Edit: ");
+                                    ab.EditContact(Console.ReadLine());
+                                });
+                            break;
 
-                    case 4:
-                        Console.Write("Enter Address Book Name: ");
-                        string b3 = Console.ReadLine();
+                        case 4:
+                            ExecuteIfBookExists(addressBooks,
+                                ab =>
+                                {
+                                    Console.Write("Enter First Name to Delete: ");
+                                    ab.DeleteContact(Console.ReadLine());
+                                });
+                            break;
 
-                        Console.Write("Enter First Name of Contact to Delete: ");
-                        string nameDel = Console.ReadLine();
+                        case 5:
+                            ExecuteIfBookExists(addressBooks,
+                                ab => ab.DisplayContacts());
+                            break;
 
-                        if (addressBooks.ContainsKey(b3))
-                            addressBooks[b3].DeleteContact(nameDel);
-                        else
-                            Console.WriteLine("Address Book Not Found!");
-                        break;
+                        case 6:
+                            ExecuteIfBookExists(addressBooks,
+                                ab => ab.AddContactsUsingMultithreading());
+                            break;
 
-                    case 5:
-                        Console.Write("Enter Address Book Name: ");
-                        string b4 = Console.ReadLine();
+                        case 7:
+                            ExecuteIfBookExists(addressBooks,
+                                ab =>
+                                {
+                                    Console.Write("Enter First Name 1: ");
+                                    string n1 = Console.ReadLine();
+                                    Console.Write("Enter First Name 2: ");
+                                    string n2 = Console.ReadLine();
+                                    ab.EditContactsUsingMultithreading(n1, n2);
+                                });
+                            break;
 
-                        if (addressBooks.ContainsKey(b4))
-                            addressBooks[b4].DisplayContacts();
-                        else
-                            Console.WriteLine("Address Book Not Found!");
-                        break;
-                    case 6:
-                        Console.Write("Enter Address Book Name: ");
-                        string b5 = Console.ReadLine();
+                        case 8:
+                            return;
 
-                        if (addressBooks.ContainsKey(b5))
-                            addressBooks[b5].AddContactsUsingMultithreading();
-                        else
-                            Console.WriteLine("Address Book Not Found!");
-                        break;
-                    case 7:
-                        Console.Write("Enter Address Book Name: ");
-                        string b7 = Console.ReadLine();
-
-                        Console.Write("Enter First Name 1 to Edit: ");
-                        string e1 = Console.ReadLine();
-
-                        Console.Write("Enter First Name 2 to Edit: ");
-                        string e2 = Console.ReadLine();
-
-                        if (addressBooks.ContainsKey(b7))
-                            addressBooks[b7].EditContactsUsingMultithreading(e1, e2);
-                        else
-                            Console.WriteLine("Address Book Not Found!");
-                        break;
-
-                    
-
-
-                    case 8:
-                        return;
-
-                    default:
-                        Console.WriteLine("Invalid Option!");
-                        break;
+                        default:
+                            Console.WriteLine("Invalid Option!");
+                            break;
+                    }
+                }
+                catch (DuplicateAddressBookException ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(ex.Message);
+                    Console.ResetColor();
                 }
             }
         }
+
+      
+        private static void ExecuteIfBookExists(
+            Dictionary<string, AddressBookService> addressBooks,
+            Action<AddressBookService> action)
+        {
+            Console.Write("Enter Address Book Name: ");
+            string name = Console.ReadLine();
+
+            if (addressBooks.ContainsKey(name))
+                action(addressBooks[name]);
+            else
+                Console.WriteLine("Address Book Not Found!");
+        }
     }
 }
-
